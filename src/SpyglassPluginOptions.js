@@ -46,44 +46,33 @@ export default class SpyglassPluginOptions {
         this.rootFileSystem = object.rootFileSystem ?? new MemoryFileSystem();
         this.cacheFileSystem = object.cacheFileSystem ?? new LocalStorageFileSystem('cache');
 
-        let baseOptions = /** @type {SpyglassOptions} */ {
-            project: {
-                externals: PluginExternals,
-                initializers: [mcdoc.initialize, je.initialize],
-                defaultConfig: ConfigService.merge(VanillaConfig, {
-                    env: {dependencies: []},
-                    lint: {undeclaredSymbol: false}
-                })
-            },
-            logger: Logger.noop(),
-        };
-
-        this.spyglassOptions = this.deepmerge(baseOptions, object.spyglassOptions ?? {});
-        return this;
-    }
-
-    /**
-     * @template {Object} T
-     * @param {T} target
-     * @param {Object} source
-     * @returns {T}
-     */
-    deepmerge(target, source) {
-        for (const key in source) {
-            if (source[key] instanceof Array) {
-                if (!target[key]) {
-                    target[key] = [];
-                }
-                target[key] = target[key].concat(source[key]);
-            } else if (source[key] instanceof Object) {
-                if (!target[key]) {
-                    target[key] = {};
-                }
-                this.deepmerge(target[key], source[key]);
-            } else {
-                target[key] = source[key];
+        let options = object.spyglassOptions ?? {};
+        if (!options.project) {
+            // noinspection JSValidateTypes
+            options.project = {};
+        }
+        if (!options.project.externals) {
+            options.project.externals = PluginExternals;
+        }
+        if (!options.project.initializers) {
+            options.project.initializers = [];
+        }
+        for (let initializer of [mcdoc.initialize, je.initialize]) {
+            if (!options.project.initializers.includes(initializer)) {
+                options.project.initializers.push(initializer);
             }
         }
-        return target;
+        if (!options.project.defaultConfig) {
+            options.project.defaultConfig = ConfigService.merge(VanillaConfig, {
+                env: {dependencies: []},
+                lint: {undeclaredSymbol: false}
+            });
+        }
+        if (!options.logger) {
+            options.logger = Logger.noop();
+        }
+
+        this.spyglassOptions = options;
+        return this;
     }
 }
