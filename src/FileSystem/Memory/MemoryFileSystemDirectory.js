@@ -6,41 +6,41 @@ export default class MemoryFileSystemDirectory extends MemoryFileSystemEntry {
     /**
      * @param {string} name
      * @param {MemoryFileSystemEntry} entry
-     * @return {this}
+     * @return {Promise<this>}
      */
-    addEntry(name, entry) {
+    async addEntry(name, entry) {
         this.entries.set(name, entry);
         return this;
     }
 
     /**
      * @param {string} name
-     * @return {?MemoryFileSystemEntry}
+     * @return {Promise<?MemoryFileSystemEntry>}
      */
-    getEntry(name) {
+    async getEntry(name) {
         return this.entries.get(name) ?? null;
     }
 
     /**
-     * @return {IterableIterator<[string, MemoryFileSystemEntry]>}
+     * @return {Promise<Iterable<[string, MemoryFileSystemEntry]>>}
      */
-    getEntries() {
+    async getEntries() {
         return this.entries.entries();
     }
 
     /**
      * @param {string} name
-     * @return {boolean}
+     * @return {Promise<boolean>}
      */
-    hasEntry(name) {
+    async hasEntry(name) {
         return this.entries.has(name);
     }
 
     /**
      * @param {string} name
-     * @return {this}
+     * @return {Promise<this>}
      */
-    removeEntry(name) {
+    async removeEntry(name) {
         this.entries.delete(name);
         return this;
     }

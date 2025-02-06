@@ -29,9 +29,9 @@ export default class MemoryFileSystem {
     /**
      * @param location
      * @param {boolean} parent If true, return the parent directory of the entry
-     * @return {MemoryFileSystemEntry}
+     * @return {Promise<MemoryFileSystemEntry>}
      */
-    findEntry(location, parent = false) {
+    async findEntry(location, parent = false) {
         let parts = this.getPathParts(location);
 
         if (parent) {
@@ -48,7 +48,7 @@ export default class MemoryFileSystem {
                 throw new Error(`ENOTDIR: ${location}`);
             }
 
-            current = current.getEntry(part);
+            current = await current.getEntry(part);
             if (current === null) {
                 throw new Error(`ENOENT: ${location}`);
             }
@@ -75,10 +75,10 @@ export default class MemoryFileSystem {
                     continue;
                 }
 
-                let next = current.getEntry(part);
+                let next = await current.getEntry(part);
                 if (next === null) {
                     next = new MemoryFileSystemDirectory();
-                    current.addEntry(part, next);
+                    await current.addEntry(part, next);
                 } else if (!(next instanceof MemoryFileSystemDirectory)) {
                     throw new Error(`EEXIST: ${location}`);
                 }
@@ -87,30 +87,30 @@ export default class MemoryFileSystem {
             }
         }
 
-        let parent = this.findEntry(location, true);
+        let parent = await this.findEntry(location, true);
         let basename = parts.pop();
         if (!(parent instanceof MemoryFileSystemDirectory)) {
             throw new Error(`ENOTDIR: ${location}`);
         }
-        if (parent.hasEntry(basename)) {
+        if (await parent.hasEntry(basename)) {
             throw new Error(`EEXIST: ${location}`);
         }
 
-        parent.addEntry(basename, new MemoryFileSystemDirectory());
+        await parent.addEntry(basename, new MemoryFileSystemDirectory());
     }
 
     /**
      * @inheritDoc
      */
     async readdir(location) {
-        let directory = this.findEntry(location);
+        let directory = await this.findEntry(location);
 
         if (!(directory instanceof MemoryFileSystemDirectory)) {
             throw new Error(`ENOTDIR: ${location}`);
         }
 
         let result = [];
-        for (let [name, entry] of directory.getEntries()) {
+        for (let [name, entry] of await directory.getEntries()) {
             let isDirectory = entry instanceof MemoryFileSystemDirectory;
             result.push({
                 name: name,
@@ -127,12 +127,12 @@ export default class MemoryFileSystem {
      * @inheritDoc
      */
     async readFile(location) {
-        let entry = this.findEntry(location);
+        let entry = await this.findEntry(location);
         if (!(entry instanceof MemoryFileSystemFile)) {
             throw new Error(`EISDIR: ${location}`);
         }
 
-        return entry.getContent();
+        return await entry.getContent();
     }
 
     /**
@@ -146,7 +146,7 @@ export default class MemoryFileSystem {
      * @inheritDoc
      */
     async stat(location) {
-        let entry = this.findEntry(location);
+        let entry = await this.findEntry(location);
         let isDirectory = entry instanceof MemoryFileSystemDirectory;
 
         return {
@@ -160,13 +160,13 @@ export default class MemoryFileSystem {
      */
     async unlink(location) {
         let parts = this.getPathParts(location);
-        let parent = this.findEntry(location, true);
+        let parent = await this.findEntry(location, true);
         let basename = parts.pop();
-        if (!(parent instanceof MemoryFileSystemDirectory) || !parent.hasEntry(basename)) {
+        if (!(parent instanceof MemoryFileSystemDirectory) || !await parent.hasEntry(basename)) {
             throw new Error(`ENOENT: ${location}`);
         }
 
-        parent.removeEntry(basename);
+        await parent.removeEntry(basename);
     }
 
     /**
@@ -181,17 +181,17 @@ export default class MemoryFileSystem {
      */
     async writeFile(location, data, _options) {
         let parts = this.getPathParts(location);
-        let parent = this.findEntry(location, true);
+        let parent = await this.findEntry(location, true);
         let basename = parts.pop();
 
         if (!(parent instanceof MemoryFileSystemDirectory)) {
             throw new Error(`ENOENT: ${location}`);
         }
 
-        if (parent.hasEntry(basename) && !(parent.getEntry(basename) instanceof MemoryFileSystemFile)) {
+        if (await parent.hasEntry(basename) && !(await parent.getEntry(basename) instanceof MemoryFileSystemFile)) {
             throw new Error(`EISDIR: ${location}`);
         }
 
-        parent.addEntry(basename, new MemoryFileSystemFile(data));
+        await parent.addEntry(basename, new MemoryFileSystemFile(data));
     }
 }

@@ -12,9 +12,9 @@ export default class MemoryFileSystemFile extends MemoryFileSystemEntry {
     }
 
     /**
-     * @return {Uint8Array}
+     * @return {Promise<Uint8Array>}
      */
-    getContent() {
+    async getContent() {
         return this.content;
     }
 }
