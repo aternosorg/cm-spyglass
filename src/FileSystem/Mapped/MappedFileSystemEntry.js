@@ -29,9 +29,15 @@ export default class MappedFileSystemEntry {
      */
     map(location) {
         let str = location.toString();
+
+        if (str + "/" === this.sourceBaseUri) {
+            return this.targetBaseUri;
+        }
+
         if (!str.startsWith(this.sourceBaseUri)) {
             return null;
         }
+
         return this.targetBaseUri + str.substring(this.sourceBaseUri.length);
     }
 
