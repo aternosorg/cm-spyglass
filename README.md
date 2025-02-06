@@ -73,16 +73,16 @@ It is not part of the package main file, so it is not included in JavaScript bun
 Spyglass requires a virtual file system to work. This extension uses multiple different file systems mounted into the main
 file system to provide different functionality for different parts of the Spyglass.
 
-#### MemoryFileSystem
-
-The [MemoryFileSystem](src/FileSystem/MemoryFileSystem.js) is a simple in-memory file system that can be used to store files in memory.
-It is both readable and writable, but does not store any data persistently.
-
 Ideally, the cache file system should be persistent, so reduce load times and prevent unnecessary requests.
 The root file system does not need to be persistent.
 
 To add additional files to a project (e.g. a pack.mcmeta file), you can add them to the root file system before passing
 into the extension. A pack.mcmeta file will allow Spyglass to detect the Minecraft version used for the project.
+
+#### MemoryFileSystem
+
+The [MemoryFileSystem](src/FileSystem/MemoryFileSystem.js) is a simple in-memory file system that can be used to store files in memory.
+It is both readable and writable, but does not store any data persistently.
 
 #### LocalStorageFileSystem
 
