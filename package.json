@@ -20,6 +20,7 @@
   "license": "MIT",
   "type": "module",
   "description": "A Codemirror extension that provides syntax highlighting, linting, and autocompletion for Minecraft datapacks using SpyglassMC",
+  "repository": "github:aternosorg/cm-spyglass",
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.4",
     "@codemirror/language": "^6.10.8",
