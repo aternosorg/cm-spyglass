@@ -1,0 +1,39 @@
+{
+  "name": "cm-spyglass",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./index.js",
+    "./src/Dependency/VanillaMcDocDependency": "./src/Dependency/VanillaMcDocDependency.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "codemirror",
+    "spyglass",
+    "minecraft",
+    "datapack"
+  ],
+  "author": "Kurt Thiemann <kurt@aternos.org>",
+  "license": "MIT",
+  "type": "module",
+  "description": "A Codemirror extension that provides syntax highlighting, linting, and autocompletion for Minecraft datapacks using SpyglassMC",
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.18.4",
+    "@codemirror/language": "^6.10.8",
+    "@codemirror/lint": "^6.8.4",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.2",
+    "@lezer/highlight": "^1.2.1",
+    "@spyglassmc/core": "^0.4.26",
+    "@spyglassmc/java-edition": "^0.3.35",
+    "@spyglassmc/mcdoc": "^0.3.30",
+    "base64-arraybuffer": "^1.0.2",
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "decompress": "^4.2.1"
+  }
+}
