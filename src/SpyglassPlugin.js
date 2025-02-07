@@ -10,6 +10,8 @@ import {getColorTokenTheme} from "./Components/colorTokenTheme.js";
 import InitState from "./Components/InitState.js";
 import {linter} from "@codemirror/lint";
 import SpyglassPluginOptions from "./SpyglassPluginOptions.js";
+import MemoryFileSystem from "./FileSystem/MemoryFileSystem.js";
+import {FSAFileSystem, LocalStorageFileSystem} from "../index.js";
 
 /**
  * @implements {import("@codemirror/state").Extension}
@@ -17,7 +19,7 @@ import SpyglassPluginOptions from "./SpyglassPluginOptions.js";
 export default class SpyglassPlugin {
     /** @type {import("@codemirror/state").Extension} */ extension;
 
-    /** @type {import("@spyglassmc/core").Service} */ service;
+    /** @type {?import("@spyglassmc/core").Service} */ service = null;
     /** @type {import("@spyglassmc/core").RootUriString} */ rootUri = 'file:///root/';
     /** @type {import("@spyglassmc/core").RootUriString} */ cacheUri = 'file:///cache/';
     /** @type {string} */ fileUri;
@@ -49,7 +51,7 @@ export default class SpyglassPlugin {
             create() {
                 return Decoration.none;
             },
-            update: (value, tr) => {
+            update: (value) => {
                 return this.decorate(value);
             },
             provide: (f) => EditorView.decorations.from(f),
@@ -68,7 +70,7 @@ export default class SpyglassPlugin {
      * Create the Spyglass service using the provided options
      * Bundled dependencies are mounted to the file system and initialized
      */
-    createSpyglassService() {
+    async createSpyglassService() {
         let spyglassOptions = this.options.spyglassOptions;
         spyglassOptions.project.cacheRoot = this.cacheUri;
 
@@ -77,8 +79,8 @@ export default class SpyglassPlugin {
         }
 
         let fileSystem = new MappedFileSystem()
-            .mount(this.cacheUri, this.options.cacheFileSystem)
-            .mount(this.rootUri, this.options.rootFileSystem);
+            .mount(this.cacheUri, this.options.cacheFileSystem ?? await this.makePersistentFileSystem('cache'))
+            .mount(this.rootUri, this.options.rootFileSystem ?? new MemoryFileSystem());
 
         for (let dependency of this.options.dependencies) {
             spyglassOptions.project.defaultConfig.env.dependencies.push(dependency.getDependencyName());
@@ -94,6 +96,18 @@ export default class SpyglassPlugin {
     }
 
     /**
+     * @param {string} identifier
+     * @return {Promise<FSAFileSystem|LocalStorageFileSystem>}
+     */
+    async makePersistentFileSystem(identifier) {
+        if (await FSAFileSystem.isSupported()) {
+            return FSAFileSystem.create(identifier);
+        }
+
+        return new LocalStorageFileSystem(identifier);
+    }
+
+    /**
      * @param {EditorView} view
      * @return {Promise<this>}
      */
@@ -102,6 +116,7 @@ export default class SpyglassPlugin {
             return this;
         }
 
+        await this.createSpyglassService();
         this.initState = InitState.INITIALISING;
         await this.service.project.ready();
         await this.service.project.onDidOpen(
@@ -158,7 +173,7 @@ export default class SpyglassPlugin {
      * @return {boolean}
      */
     isLintRefreshRequired() {
-        let docAndNode = this.service.project.getClientManaged(this.fileUri);
+        let docAndNode = this.service?.project.getClientManaged(this.fileUri);
         if (!docAndNode) {
             return false;
         }
@@ -184,7 +199,7 @@ export default class SpyglassPlugin {
      * @return {Hint[]}
      */
     lint() {
-        let docAndNode = this.service.project.getClientManaged(this.fileUri);
+        let docAndNode = this.service?.project.getClientManaged(this.fileUri);
         if (!docAndNode) {
             return [];
         }
@@ -215,7 +230,7 @@ export default class SpyglassPlugin {
      * @return {import("@codemirror/view").DecorationSet}
      */
     decorate(previous = Decoration.none) {
-        let docAndNode = this.service.project.getClientManaged(this.fileUri)
+        let docAndNode = this.service?.project.getClientManaged(this.fileUri)
         if (!docAndNode) {
             return previous;
         }
@@ -292,7 +307,7 @@ export default class SpyglassPlugin {
      */
     async handleCompletions(ctx) {
         await this.syncState.wait();
-        let docAndNodes = await this.service.project.ensureClientManagedChecked(this.fileUri)
+        let docAndNodes = await this.service?.project.ensureClientManagedChecked(this.fileUri)
         if (!docAndNodes) {
             return null
         }

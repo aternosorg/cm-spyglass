@@ -3,8 +3,6 @@ import {ConfigService, Logger, VanillaConfig} from "@spyglassmc/core";
 import {PluginExternals} from "./Externals/PluginExternals.js";
 import * as mcdoc from "@spyglassmc/mcdoc";
 import * as je from "@spyglassmc/java-edition";
-import MemoryFileSystem from "./FileSystem/MemoryFileSystem.js";
-import LocalStorageFileSystem from "./FileSystem/LocalStorageFileSystem.js";
 
 /**
  * @typedef {Object} SpyglassPluginOptionsObject
@@ -43,8 +41,8 @@ export default class SpyglassPluginOptions {
         this.languageId = object.languageId ?? 'mcfunction';
         this.highlightStyle = object.highlightStyle ?? defaultHighlightStyle;
         this.dependencies = object.dependencies ?? [];
-        this.rootFileSystem = object.rootFileSystem ?? new MemoryFileSystem();
-        this.cacheFileSystem = object.cacheFileSystem ?? new LocalStorageFileSystem('cache');
+        this.rootFileSystem = object.rootFileSystem ?? null;
+        this.cacheFileSystem = object.cacheFileSystem ?? null;
 
         let options = object.spyglassOptions ?? {};
         if (!options.project) {

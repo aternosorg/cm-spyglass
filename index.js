@@ -28,6 +28,7 @@ export { default as JsonFileSystem } from "./src/FileSystem/JsonFileSystem.js";
 export { default as LocalStorageFileSystem } from "./src/FileSystem/LocalStorageFileSystem.js";
 export { default as MappedFileSystem } from "./src/FileSystem/MappedFileSystem.js";
 export { default as MemoryFileSystem } from "./src/FileSystem/MemoryFileSystem.js";
+export { default as FSAFileSystem } from "./src/FileSystem/FSAFileSystem.js";
 
 // FileSystem/Mapped
 export { default as MappedFileSystemEntry } from "./src/FileSystem/Mapped/MappedFileSystemEntry.js";
